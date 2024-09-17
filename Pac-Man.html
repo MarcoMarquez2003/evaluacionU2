@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas</title>
+<style type="text/css">
+body {
+    background-color: gray;
+}
+canvas {
+    background-color: cyan;
+}
+</style>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="500"></canvas>
+<script type="text/javascript">
+const myCanvas = document.getElementById("myCanvas");
+const ctx = myCanvas.getContext("2d");
+
+var walls = [];
+class Rectangulo {
+    constructor(color, w, h, x, y) {
+        this.color = color;
+        this.w = w;
+        this.h = h;
+        this.x = x;
+        this.y = y;
+    }
+    collision(otro) {
+        return (
+            this.x < otro.x + otro.w &&
+            this.x + this.w > otro.x &&
+            this.y < otro.y + otro.h &&
+            this.y + this.h > otro.y
+        );
+    }
+}
+
+var player = new Rectangulo("red", 30, 30, 100, 100);
+
+var targets = [];
+for (let i = 0; i < 50; i++) {
+    let targetX = Math.random() * (myCanvas.width - 10);
+    let targetY = Math.random() * (myCanvas.height - 10);
+    targets.push(new Rectangulo("black", 10, 10, targetX, targetY));
+}
+
+// Enemigos
+class Enemigo extends Rectangulo {
+    constructor(color, w, h, x, y, velX, velY) {
+        super(color, w, h, x, y);
+        this.velX = velX;
+        this.velY = velY;
+    }
+    mover() {
+        this.x += this.velX;
+        this.y += this.velY;
+
+        // Rebotar contra las paredes
+        if (this.x <= 0 || this.x + this.w >= myCanvas.width) {
+            this.velX *= -1;
+        }
+        if (this.y <= 0 || this.y + this.h >= myCanvas.height) {
+            this.velY *= -1;
+        }
+    }
+}
+
+var enemigos = [];
+// Agregar 3 enemigos que salen del área de obstáculos
+for (let i = 0; i < 3; i++) {
+    let enemigoX = 350 + Math.random() * 50;
+    let enemigoY = 250;
+    let velX = (Math.random() - 0.5) * 3;
+    let velY = (Math.random() - 0.5) * 3;
+    enemigos.push(new Enemigo("green", 30, 30, enemigoX, enemigoY, velX, velY));
+}
+
+// Paredes
+walls.push(new Rectangulo("blue", 800, 5, 5, 0));
+walls.push(new Rectangulo("blue", 800, 5, 5, 495));
+walls.push(new Rectangulo("blue", 5, 200, 0, 0));
+walls.push(new Rectangulo("blue", 5, 250, 0, 250));
+walls.push(new Rectangulo("blue", 5, 200, 795, 0));
+walls.push(new Rectangulo("blue", 5, 250, 795, 250));
+//Obstaculos Salida de enemigos
+walls.push(new Rectangulo("blue", 100, 5, 350, 250));
+walls.push(new Rectangulo("blue", 5, 55, 345, 200));
+walls.push(new Rectangulo("blue", 5, 55, 450, 200));
+walls.push(new Rectangulo("blue", 25, 5, 350, 200));
+walls.push(new Rectangulo("blue", 25, 5, 425, 200));
+//cuadros
+walls.push(new Rectangulo("blue", 50, 50, 550, 150));
+walls.push(new Rectangulo("blue", 50, 50, 170, 150));
+walls.push(new Rectangulo("blue", 50, 50, 50, 50));
+walls.push(new Rectangulo("blue", 50, 50, 700, 50));
+//Bordes de escape
+walls.push(new Rectangulo("blue", 50, 5, 745, 250));
+walls.push(new Rectangulo("blue", 50, 5, 745, 195));
+walls.push(new Rectangulo("blue", 50, 5, 5, 250));
+walls.push(new Rectangulo("blue", 50, 5, 5, 195));
+//obstaculos
+walls.push(new Rectangulo("blue", 10, 80, 300, 120));
+walls.push(new Rectangulo("blue", 50, 10, 300, 155));
+
+walls.push(new Rectangulo("blue", 10, 80, 490, 120));
+walls.push(new Rectangulo("blue", 50, 10, 450, 155));
+
+walls.push(new Rectangulo("blue", 400, 10, 200, 40));
+walls.push(new Rectangulo("blue", 400, 10, 200, 450));
+//parado
+walls.push(new Rectangulo("blue", 10, 50, 395, 290));
+walls.push(new Rectangulo("blue", 10, 40, 395, 100));
+walls.push(new Rectangulo("blue", 10, 40, 395, 375));
+walls.push(new Rectangulo("blue", 10, 80, 300, 250));
+walls.push(new Rectangulo("blue", 10, 80, 490, 250));
+walls.push(new Rectangulo("blue", 10, 80, 150, 300));
+walls.push(new Rectangulo("blue", 10, 80, 70, 350));
+walls.push(new Rectangulo("blue", 10, 80, 720, 350));
+walls.push(new Rectangulo("blue", 10, 80, 650, 300));
+walls.push(new Rectangulo("blue", 10, 80, 220, 255));
+walls.push(new Rectangulo("blue", 10, 80, 575, 255));
+walls.push(new Rectangulo("blue", 10, 80, 650, 150));
+walls.push(new Rectangulo("blue", 10, 80, 120, 150));
+
+
+//Acostado
+walls.push(new Rectangulo("blue", 80, 10, 360, 290));
+walls.push(new Rectangulo("blue", 80, 10, 360, 100));
+walls.push(new Rectangulo("blue", 80, 10, 360, 375));
+walls.push(new Rectangulo("blue", 80, 10, 0, 350));
+walls.push(new Rectangulo("blue", 80, 10, 70, 300));
+walls.push(new Rectangulo("blue", 80, 10, 720, 350));
+walls.push(new Rectangulo("blue", 80, 10, 650, 300));
+walls.push(new Rectangulo("blue", 80, 10, 220, 375));
+walls.push(new Rectangulo("blue", 80, 10, 500, 375));
+walls.push(new Rectangulo("blue", 80, 10, 650, 150));
+walls.push(new Rectangulo("blue", 80, 10, 50, 150));
+walls.push(new Rectangulo("blue", 80, 10, 150, 100));
+walls.push(new Rectangulo("blue", 80, 10, 550, 100));
+
+var timeElapsed = 0;
+var timerInterval;
+
+function startTimer() {
+    timerInterval = setInterval(function() {
+        if (!pause) {
+            timeElapsed++;
+        }
+    }, 1000); 
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
+var direccion = '';
+var mov = 1.5;
+var coin = 0;
+var coinSound = new Audio('pacman-eating-cherry.mp3');
+var pause = false;
+var ladronIcon = new Image();
+ladronIcon.src = 'ladron_icon.png';
+var policeIcon = new Image();
+policeIcon.src = 'police_icon.png';
+var bgMusic = new Audio('pacman-music.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.5;
+
+document.addEventListener('keypress', function (e) {
+    if (bgMusic.paused) {
+        bgMusic.play();
+    }
+    switch (e.keyCode) {
+        case 119: // w
+            direccion = 'up';
+            break;
+        case 115: // s
+            direccion = 'down';
+            break;
+        case 97: // a
+            direccion = 'left';
+            break;
+        case 100: // d
+            direccion = 'right';
+            break;
+        case 32: // space
+            pause = !pause;
+            break;
+    }
+});
+
+function resetPlayerPosition() {
+    player.x = 100;
+    player.y = 100;
+}
+
+function update() {
+    if (!pause) {
+        switch (direccion) {
+            case 'up':
+                player.y -= mov;
+                if (player.y < 0) player.y = myCanvas.height - player.h;
+                break;
+            case 'down':
+                player.y += mov;
+                if (player.y > myCanvas.height) player.y = 0;
+                break;
+            case 'right':
+                player.x += mov;
+                if (player.x > myCanvas.width) player.x = 0;
+                break;
+            case 'left':
+                player.x -= mov;
+                if (player.x < 0) player.x = myCanvas.width - player.w;
+                break;
+        }
+
+        targets.forEach(function (target) {
+            if (player.collision(target)) {
+                coin += 10;
+                target.x = Math.floor(Math.random() * (myCanvas.width - target.w));
+                target.y = Math.floor(Math.random() * (myCanvas.height - target.h));
+                coinSound.play();
+            }
+        });
+
+        walls.forEach(function (wall) {
+            if (player.collision(wall)) {
+                switch (direccion) {
+                    case 'up':
+                        player.y += mov;
+                        break;
+                    case 'down':
+                        player.y -= mov;
+                        break;
+                    case 'left':
+                        player.x += mov;
+                        break;
+                    case 'right':
+                        player.x -= mov;
+                        break;
+                }
+            }
+        });
+
+        // Mover enemigos
+        enemigos.forEach(function (enemigo) {
+            enemigo.mover();
+            if (player.collision(enemigo)) {
+                resetPlayerPosition(); // Regresa al jugador al inicio si colisiona con un enemigo
+            }
+        });
+    }
+}
+
+function paint() {
+    ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+    if (pause) {
+        ctx.fillStyle = "black";
+        ctx.font = '30px Arial';
+        ctx.fillText("Juego en pausa", myCanvas.width / 2 - 100, myCanvas.height / 2);
+    } else {
+        ctx.drawImage(ladronIcon, player.x, player.y, player.w, player.h);
+        
+        ctx.fillStyle = "red";
+        ctx.font = '25px Arial';
+        ctx.fillText("Coin: " + coin, 650, 25);
+        ctx.fillText("Tiempo: " + timeElapsed + "s", 50,25);
+
+        targets.forEach(function (target) {
+            ctx.fillStyle = target.color;
+            ctx.fillRect(target.x, target.y, target.w, target.h);
+            ctx.strokeRect(target.x, target.y, target.w, target.h);
+        });
+
+        enemigos.forEach(function (enemigo) {
+            ctx.drawImage(policeIcon, enemigo.x, enemigo.y, enemigo.w, enemigo.h);
+        });
+
+        walls.forEach(function (wall) {
+            ctx.fillStyle = wall.color;
+            ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+            ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+        });
+
+        update();
+    }
+    requestAnimationFrame(paint);
+}
+startTimer();
+requestAnimationFrame(paint);
+</script>
+</body>
+</html>
